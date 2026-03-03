@@ -1,0 +1,76 @@
+name: Run Tests
+
+on:
+  push:
+    paths:
+      - "**.test.js"
+      - "package.json"
+      - ".github/workflows/tests.yml"
+  pull_request:
+    paths:
+      - "**.test.js"
+      - "package.json"
+
+jobs:
+  # ── Detecta qué ficheros han cambiado en el push ──────────────────────────
+  changes:
+    name: Detect changed files
+    runs-on: ubuntu-latest
+    outputs:
+      variables: ${{ steps.filter.outputs.variables }}
+      conditionals: ${{ steps.filter.outputs.conditionals }}
+      functions: ${{ steps.filter.outputs.functions }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            variables:
+              - '01-variables.test.js'
+            conditionals:
+              - '02-conditionals.test.js'
+            functions:
+              - '03-functions.test.js'
+
+  # ── Ejercicio 1 ───────────────────────────────────────────────────────────
+  test-variables:
+    name: "Test · 01 Variables"
+    needs: changes
+    if: needs.changes.outputs.variables == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Run variables tests
+        run: node --test 01-variables.test.js
+
+  # ── Ejercicio 2 ───────────────────────────────────────────────────────────
+  test-conditionals:
+    name: "Test · 02 Conditionals"
+    needs: changes
+    if: needs.changes.outputs.conditionals == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Run conditionals tests
+        run: node --test 02-conditionals.test.js
+
+  # ── Ejercicio 3 ───────────────────────────────────────────────────────────
+  test-functions:
+    name: "Test · 03 Functions"
+    needs: changes
+    if: needs.changes.outputs.functions == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+      - name: Run functions tests
+        run: node --test 03-functions.test.js
